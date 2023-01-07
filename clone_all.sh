@@ -6,18 +6,19 @@
 # Written By: Brian Konzman
 
 
-if [[ $# -ne 4 ]];
+if [[ $# -ne 5 ]];
 	then
 	echo ""
 	echo "This script will clone groups of repos from an organization using an identifier"
 	echo "This identifier can be the name of the assignment for github classroom repos"
 	echo "or some common identifier across multiple repos"
 	echo ""
-	echo "Please provide 4 parameters in this order:"
+	echo "Please provide 5 parameters in this order:"
 	echo "1. Name of Organization (GitHubClassroom)"
 	echo "2. Name of Identifier (assignment)"
 	echo "3. Your github username"
 	echo "4. The protocol for cloning the repo (ssh/https)"
+	echo "5. Your GitHub access token"
 	echo ""
 	echo "note: To use ssh, you must set up an ssh key with github"
 	echo "You may find it useful to set up your shell to know your GitHub credentials for https"
@@ -26,6 +27,7 @@ else
 	identifier=$2
 	githubUsername=$3
 	tag=$4
+	token=$5
 
 	if [ "$tag" == "https" ];
 		then
@@ -36,11 +38,9 @@ else
 		echo "Using ssh"
 	fi
 
-	echo "Enter Github Password:"
-	read -s githubPassword
-
 	# Get the first page of repo results (100 entries)
-	rawJSON=$(curl --user  "$githubUsername:$githubPassword" "https://api.github.com/orgs/$organization/repos?per_page=100" -v)
+	rawJSON=$(curl --user  "$githubUsername:$token" "https://api.github.com/orgs/$organization/repos?per_page=100" -v)
+
 	# Get the line that tells if this is the last page
     numRepos=$(echo "$rawJSON" | grep -o "full_name" | wc -l)
 	page=2
@@ -48,11 +48,11 @@ else
 	# While we have not seen the last page
 	while [[ "$numRepos" -eq "100" ]]; do
 		# Get next page
-		tempJSON=$(curl --user  "$githubUsername:$githubPassword" "https://api.github.com/orgs/$organization/repos?per_page=100&page=$page" -v)
+		tempJSON=$(curl --user  "$githubUsername:$token" "https://api.github.com/orgs/$organization/repos?per_page=100&page=$page" -v)
 		numRepos=$(echo "$tempJSON" | grep -o "full_name" | wc -l)
 
 		#concatenate tempJSON on to rawJSON
-		rawJSON=$rawJSON$tempJSON
+		rawJSON="$rawJSON$tempJSON"
 		((page++))
 	done
 	# grep full lines that have the same tag identifier

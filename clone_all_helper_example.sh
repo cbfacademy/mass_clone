@@ -20,6 +20,7 @@ else
 	organization="Organization"
 	username="username"
 	protocol="ssh"
+	token="PersonalAccessToken"
 
-	./clone_all.sh ${organization} ${assignment} ${username} ${protocol}
+	./clone_all.sh ${organization} ${assignment} ${username} ${protocol} ${token}
 fi
